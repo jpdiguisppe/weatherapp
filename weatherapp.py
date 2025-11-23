@@ -1,5 +1,8 @@
 # Weather App Project:
 import os #lets us access environment variables like our API key
+import requests #lets us make HTTP requests to APIs
+
+BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 def main ():
 
@@ -8,7 +11,8 @@ def main ():
     print("You entered:", city)
 
     data = get_weather_by_city(city)
-    print(data)
+    formatteddata = format_weather(data)
+    print(formatteddata)
 
 def get_api_key():
     """
@@ -39,22 +43,81 @@ def get_api_key():
 
 def get_weather_by_city(city_name):
     """
-    This function will talk to the weather API.
-    It will take a city name (like 'Boston') and return the raw JSON data
-    that comes back from the API.
+    Talk to the OpenWeather API and get the current weather for a given city.
 
-    Steps we will implement later:
-    1. Get the API key using get_api_key().
-    2. Build the URL + query parameters for the API request.
-    3. Use the requests library to send an HTTP GET request.
-    4. Convert the API response into a Python dictionary using .json().
-    5. Return that dictionary to main().
+    Args:
+        city_name (str): City name like "Boston", "Tokyo", etc.
+
+    Returns:
+        dict: JSON response from the weather API as a Python dictionary.
+
+    Raises:
+        requests.exceptions.RequestException
+        requests.exceptions.HTTPError
     """
 
-    raise NotImplementedError("get_weather_by_city() is not implemented yet.")  
+    # Retrieve the API key using our helper function.
+    api_key = get_api_key()
+
+    # Query parameters sent to the API.
+    # "q" is the city name.
+    # "appid" is your API key.
+    # "units" = imperial means Fahrenheit.
+    params = {
+        "q": city_name,
+        "appid": api_key,
+        "units": "imperial"
+    }
+
+    # Send GET request to the weather API.
+    response = requests.get(BASE_URL, params=params, timeout=10)
+
+    # If the status isn't 200 OK, raise an exception.
+    response.raise_for_status()
+
+    # Convert JSON response into a Python dictionary.
+    data = response.json()
+
+    # Return the dictionary to the main program.
+    return data
 
 # TEMPORARY TESTING CODE: uncomment next like to get get_api_key() 
 #print(get_api_key())
+
+def format_weather(data):
+    
+    """
+    Take the raw weather data dictionary from the API
+    and turn it into a nicely formatted multi-line string.
+    """
+    name = data.get("name", "Unknown location") #gets city name from data, if its missing uses "Unknown location"
+    main = data.get("main", {}) #"main" conatins temp, humidity, etc.
+    weather_list = data.get("weather", []) #weather is a list, we usually want the first item
+    wind = data.get("wind", {}) #wind info
+    
+    temp = main.get("temp") #extraxt specific values from main dict
+    feels_like = main.get("feels_like")
+    humidity = main.get("humidity")
+
+    if weather_list:
+        description = weather_list[0].get("description", "N/A").capitalize() #get description from first item in weather list, capitalize first letter
+    else:
+        description = "N/A"
+
+    wind_speed = wind.get("speed") #gets wind speed
+
+    #build lines of text that we will join together
+    lines = [
+        f"Weather for {name}:",
+        f"  {description}",
+        f"  Temperature: {temp} °F (feels like: {feels_like} °F)",
+        f"  Humidity: {humidity}%",
+        f"  Wind speed: {wind_speed} mph"
+    ]
+
+    return "\n".join(lines) #join lines with newlines between them
+
+
 
 if __name__ == "__main__": #makes sure main() runs only when this file is executed directly
     main()
