@@ -1,4 +1,6 @@
 # Weather App Project:
+import os #lets us access environment variables like our API key
+
 def main ():
 
     city = input("Enter a city: ")
@@ -10,17 +12,30 @@ def main ():
 
 def get_api_key():
     """
-    This function will retrieve your weather API key from an environment variable. 
-    Environment variables let us store secrets (like API keys) OUTSIDE the code,
-    so we don't accidentally upload them to GitHub.
+    Get the OpenWeather API key from an environment variable.
 
-    Steps we will implement later:
-    1. Read an environment variable named "OPENWEATHER_API_KEY".
-    2. If it does not exist, raise an error telling the user to set it.
-    3. Return the API key as a string.
+    Returns:
+        str: The API key string.
+
+    Raises:
+        RuntimeError: If the environment variable is not set.
     """
+    # Read the value of the environment variable named "OPENWEATHER_API_KEY".
+    # If it doesn't exist, os.getenv(...) returns None.
+    
+    api_key = os.getenv("OPENWEATHER_API_KEY")
 
-    raise NotImplementedError("get_api_key() is not implemented yet.")  
+    # Check if the API key is missing or empty.
+    if not api_key:
+        # Raise a RuntimeError with a clear message so the user knows
+        # how to fix the problem instead of the program failing silently.
+        raise RuntimeError(
+            "OPENWEATHER_API_KEY environment variable is not set. "
+            "Please export it before running the program."
+        )
+
+    # If we reach this line, we have a valid API key string.
+    return api_key
 
 def get_weather_by_city(city_name):
     """
@@ -37,6 +52,9 @@ def get_weather_by_city(city_name):
     """
 
     raise NotImplementedError("get_weather_by_city() is not implemented yet.")  
+
+# TEMPORARY TESTING CODE: uncomment next like to get get_api_key() 
+#print(get_api_key())
 
 if __name__ == "__main__": #makes sure main() runs only when this file is executed directly
     main()
