@@ -4,16 +4,74 @@ import requests #lets us make HTTP requests to APIs
 
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
-def main ():
+def main():
 
+    # Ask user for a city
     city = input("Enter a city: ")
-    city = city.strip()#removes leading/trailing spaces
+    city = city.strip()  # removes leading/trailing spaces
     print("You entered:", city)
 
-    data = get_weather_by_city(city)
-    formatteddata = format_weather(data)
-    print(formatteddata)
+    # FIRST: Check if the city is valid (using imperial as a quick test)
+    try:
+        # Try to get weather in imperial just to validate city exists
+        data_imperial = get_weather_by_city(city, units="imperial")
 
+    except requests.exceptions.HTTPError as e:
+        # This runs if the HTTP status code is an error (like 404, 401, 500, etc.)
+        if e.response is not None and e.response.status_code == 404:
+            # 404 = "Not Found" usually means the city name is invalid.
+            print("City not found. Please check the spelling and try again.")
+        else:
+            print("HTTP error occurred:", e)
+        return  # stop program since city isn't valid
+
+    except requests.exceptions.RequestException as e:
+        # This catches network-related errors (no internet, timeout, etc.)
+        print("Network error occurred:", e)
+        return
+
+    except RuntimeError as e:
+        # This catches our custom error from get_api_key()
+        print("Configuration error:", e)
+        return
+
+    # If we reach here, city is valid, so NOW ask for units
+
+    # Ask for units (loop until valid)
+    while True:
+        units_choice = input("Units? (1 for Fahrenheit, 2 for Celsius) [default: 1]: ").strip()
+
+        if units_choice in ["", "1"]:
+            units = "imperial"   # Fahrenheit
+            break
+        elif units_choice == "2":
+            units = "metric"     # Celsius
+            break
+        else:
+            print("Invalid choice. Please enter '1', '2', or press Enter.")
+
+    # Now fetch data in the proper units
+    try:
+        if units == "imperial":
+            # We already fetched this earlier
+            data = data_imperial
+        else:
+            # Fetch Celsius data from API
+            data = get_weather_by_city(city, units=units)
+
+        formatteddata = format_weather(data, units=units)
+        print(formatteddata)
+        
+    #runs exception handling again in case of errors during second fetch
+    except requests.exceptions.HTTPError as e:
+        print("HTTP error occurred:", e)
+
+    except requests.exceptions.RequestException as e:
+        print("Network error occurred:", e)
+
+    except RuntimeError as e:
+        print("Configuration error:", e)
+  
 def get_api_key():
     """
     Get the OpenWeather API key from an environment variable.
@@ -41,12 +99,13 @@ def get_api_key():
     # If we reach this line, we have a valid API key string.
     return api_key
 
-def get_weather_by_city(city_name):
+def get_weather_by_city(city_name, units ="imperial"): #units=imperial is base case
     """
     Talk to the OpenWeather API and get the current weather for a given city.
 
     Args:
         city_name (str): City name like "Boston", "Tokyo", etc.
+        units (str): Units of measurement. "imperial" for Fahrenheit, "metric" for Celsius.
 
     Returns:
         dict: JSON response from the weather API as a Python dictionary.
@@ -66,7 +125,7 @@ def get_weather_by_city(city_name):
     params = {
         "q": city_name,
         "appid": api_key,
-        "units": "imperial"
+        "units": units
     }
 
     # Send GET request to the weather API.
@@ -84,7 +143,7 @@ def get_weather_by_city(city_name):
 # TEMPORARY TESTING CODE: uncomment next like to get get_api_key() 
 #print(get_api_key())
 
-def format_weather(data):
+def format_weather(data, units="imperial"):
     
     """
     Take the raw weather data dictionary from the API
@@ -99,6 +158,14 @@ def format_weather(data):
     feels_like = main.get("feels_like")
     humidity = main.get("humidity")
 
+    #which units is being used
+    if units == "metric":
+        tempunits = "°C"
+        windunits = "m/s"
+    else:
+        tempunits = "°F"
+        windunits = "mph"
+
     if weather_list:
         description = weather_list[0].get("description", "N/A").capitalize() #get description from first item in weather list, capitalize first letter
     else:
@@ -110,9 +177,9 @@ def format_weather(data):
     lines = [
         f"Weather for {name}:",
         f"  {description}",
-        f"  Temperature: {temp} °F (feels like: {feels_like} °F)",
+        f"  Temperature: {temp} {tempunits} (feels like: {feels_like} {tempunits})",
         f"  Humidity: {humidity}%",
-        f"  Wind speed: {wind_speed} mph"
+        f"  Wind speed: {wind_speed} {windunits}",
     ]
 
     return "\n".join(lines) #join lines with newlines between them
