@@ -1,112 +1,72 @@
-Weather App
+# Weather App (CLI + Flask)
 
-A simple Python project that fetches real-time weather data for any city using the OpenWeatherMap API.
-This project includes both a CLI version (runs in the terminal) and a Flask web app version (runs in a browser).
+A Python project that fetches real-time weather data for any city using the **OpenWeatherMap API**.  
+This repository includes both a **command-line interface (CLI)** version and a **Flask web application**.
 
-Features
+---
 
-Enter any city and get current weather data
+## Features
 
-Supports Fahrenheit and Celsius
+- Search weather for any valid city  
+- Supports **Fahrenheit** and **Celsius**  
+- Terminal (CLI) interface  
+- Flask web interface  
+- Shared logic between both versions (no duplicated code)  
+- API key stored in environment variables  
+- Error handling for:
+  - Invalid city names  
+  - Missing API key  
+  - Network problems  
+  - Bad HTTP responses  
 
-Clean formatted output
+---
 
-Proper error handling (bad city names, missing API key, network issues)
+## Requirements
 
-Web version built with Flask
+- Python 3.9 or higher  
+- OpenWeatherMap API key  
+- Required Python libraries:
+  - requests  
+  - flask  
 
-Shared logic between CLI and web app (no duplicate code)
+---
 
-Project Structure
-weather-app/
-│
-├── weatherapp.py        # CLI version + main weather logic
-├── app.py               # Flask web app
-├── templates/
-│   ├── index.html       # Homepage form
-│   └── result.html      # Weather results page
-└── README.md
+## How It Works
 
-Requirements
+### Core Logic (`weatherapp.py`)
 
-Python 3.9+
+Handles:
 
-requests
+- Retrieving the API key  
+- Calling the OpenWeather API  
+- Parsing the JSON response  
+- Handling units (imperial/metric)  
+- Formatting the output  
+- Error handling  
 
-flask
+### Flask Web App (`app.py`)
 
-OpenWeatherMap API key
+- Imports the core weather logic  
+- Renders HTML templates  
+- Handles form submissions  
+- Displays errors on the webpage  
+- Routes:
+  - `GET /` → Display homepage  
+  - `POST /` → Process city + units and display results  
 
-Setting Up Your API Key
+### HTML Templates (`templates/`)
 
-Go to https://openweathermap.org
- and create a free account
+- `index.html` — Homepage with form  
+- `result.html` — Displays weather results  
 
-Get your API key
+---
 
-Store it as an environment variable:
+## Future Improvements
 
-macOS / Linux:
-export OPENWEATHER_API_KEY="your_api_key_here"
+- Add CSS styling for better visuals  
+- Add sunrise/sunset times  
+- Add a 5-day forecast  
+- Display weather icons  
+- Deploy the web app online  
+- Package the CLI version as a pip tool
 
-Windows (PowerShell):
-setx OPENWEATHER_API_KEY "your_api_key_here"
-
-Running the CLI Version
-python weatherapp.py
-
-
-You’ll be prompted for:
-
-city
-
-units (°F or °C)
-
-Example output:
-
-Weather for Boston:
-  Clear sky
-  Temperature: 49 °F (feels like: 44 °F)
-  Humidity: 63%
-  Wind speed: 5 mph
-
-Running the Web App (Flask)
-
-Activate your environment and run:
-
-python app.py
-
-
-If port 5000 is in use:
-
-python app.py --port=5001
-
-
-Then open your browser:
-
-http://127.0.0.1:5001/
-
-
-You’ll see:
-
-A city input box
-
-Units dropdown
-
-Results formatted on a separate page
-
-How It Works (Quick Summary)
-
-weatherapp.py contains the real logic:
-
-calls the OpenWeather API
-
-handles units
-
-formats weather output
-
-manages errors
-
-app.py is a simple Flask wrapper that uses the same functions to show results in a browser.
-
-/templates contains the HTML pages Flask uses.
