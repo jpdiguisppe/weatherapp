@@ -23,7 +23,6 @@ This repository includes both a **command-line interface (CLI)** version and a *
 
 ## Requirements
 
-- Python 3.9 or higher  
 - OpenWeatherMap API key  
 - Required Python libraries:
   - requests  
