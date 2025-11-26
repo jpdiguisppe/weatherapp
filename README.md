@@ -59,14 +59,4 @@ Handles:
 - `index.html` — Homepage with form  
 - `result.html` — Displays weather results  
 
----
-
-## Future Improvements
-
-- Add CSS styling for better visuals  
-- Add sunrise/sunset times  
-- Add a 5-day forecast  
-- Display weather icons  
-- Deploy the web app online  
-- Package the CLI version as a pip tool
 
